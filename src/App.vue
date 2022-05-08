@@ -5,7 +5,7 @@
       color="white"
       flat
       src="car-image.jpg"
-      height="100px"
+      height="100px" 
     >
       <v-container class="py-0 fill-height">
         
@@ -134,7 +134,7 @@
     
         ],
         links: [
-        'Infomation',
+        'Information',
         'Home',
         'Mypage'
       ],
