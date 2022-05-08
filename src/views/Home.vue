@@ -259,7 +259,7 @@ sm="6">
             color="blue darken-1"
             text
             
-            @click="[chekedform(),insertNew(),dialog=false]"
+            @click="[insertNew(),dialog=false]"
           >
             Save
           </v-btn>
