@@ -112,7 +112,7 @@
           <v-text-field
             ref="input_period"
             v-model="input_period"
-            :rules="[() => !!input_period || 'This field is required']"
+            :rules="[() => !!input_period || '카풀 기간을 입력하세요.']"
             label="카풀 기간 입력*"
             required
             placeholder="ex) 1개월"
