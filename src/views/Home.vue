@@ -3,21 +3,153 @@
 
    
 <v-container>
-<v-card class="pa-4">
+  
+  <v-card 
+  class="pa-4"
+  ref="search_form">
 <p align="center"> 카풀 검색 필터 </p>
 
 
-
+<v-row>
     <v-col
-    sm="6">
+    cols="12"
+    sm="4">
       <v-text-field
-        v-model="search"
+        ref="search_start_point"
+        v-model="search_start_point"
         append-icon="mdi-magnify"
-        label="Search"
+        label="출발지*"
+        
+        required
+        placeholder="입력하세요"
         single-line
         hide-details
       ></v-text-field>
     </v-col>
+
+    <v-col
+    cols="12"
+    sm="4">
+      <v-text-field
+        ref="search_destination"
+        v-model="search_destination"
+        append-icon="mdi-magnify"
+        label="목적지*"
+        
+        single-line
+        hide-details
+      ></v-text-field>
+    </v-col>
+
+    <v-col
+    cols="12"
+    sm="2">
+    <v-select
+            ref="search_gender"
+            :items="['여자', '남자', '상관없음']"
+            v-model="search_gender"
+            label="성별*"
+            required
+          ></v-select>
+
+    </v-col>
+
+    <v-col
+    cols="12"
+    sm="3">
+      <v-text-field
+        ref="search_period"
+        v-model="search_period"
+        label="기간입력 (ex. 1개월 )*"
+
+        single-line
+        hide-details
+      ></v-text-field>
+    </v-col>
+
+    <v-col
+    cols="12"
+    sm="3">
+      <v-autocomplete
+            :items="['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일']"
+            ref="search_day"
+            v-model="search_day"
+            label="카풀 요일 선택*"
+            required
+            multiple
+          >
+           </v-autocomplete>
+    </v-col>
+
+    <v-col
+    cols="12"
+    sm="3">
+      <v-text-field
+        ref="search_estimated_start_time"
+        v-model="search_start_time"
+        label="예상 탑승 시간 (ex.08:00)*"
+        single-line
+        hide-details
+      ></v-text-field>
+    </v-col>
+
+    <v-col
+    cols="12"
+    sm="3">
+      <v-text-field
+        ref="search_destination_time"
+        v-model="search_destination_time"
+        label="예상 도착 시간 (ex. 08:50)*"
+        single-line
+        hide-details
+      ></v-text-field>
+    </v-col>
+</v-row>
+
+<v-row
+  justify="center"
+  align="center">
+  
+  <v-col
+  cols="12"
+  sm="4">
+ 
+    <v-btn
+       color="primary"
+       @click="[search_info()]"
+       >
+
+      카풀 검색
+      
+      </v-btn>
+  </v-col>
+  <v-col
+    cols="12"
+    sm="4">
+
+      <v-btn
+       color="primary"
+       @click="delete_info()"
+       >
+
+      초기화
+      
+      </v-btn>
+<!--      <p> {{search_start_point}}</p>
+
+     <div 
+     v-for="item in carpool_list" :key="item.name">
+     <div
+     v-if="item.name===search_start_point">
+      얘랑 같아요 {{item.name}} {{item.gender}} </div>
+    
+     {{ item.name }} 
+     
+     </div> -->
+
+
+  </v-col>
+</v-row>
     
 
 </v-card>
@@ -25,13 +157,13 @@
 <v-container>
 
 
-<br>
-
-      <v-row > <!-- 카풀 등록 dialog, 운전자용 -->
+<v-row 
+  justify="center"
+  align="center"> <!-- 카풀 등록 dialog, 운전자용 -->
 
 <v-col
-  cols="12"
-  m="6">
+  cols="2"
+  >
 
     <v-dialog
       v-model="dialog"
@@ -131,6 +263,7 @@
             :rules="[() => !!input_day || '요일을 선택하세요']"
             label="카풀 요일 선택*"
             required
+            multiple
           >
            </v-autocomplete>
           </v-col>
@@ -187,7 +320,7 @@
                   v-model="input_destination"
                   :rules="[() => !!input_destination || '목적지를 입력하세요.']"
                   required
-                  placeholder="ex) 8:00"
+                  placeholder="ex) 인하대역"
                 ></v-text-field>
               </v-col>
 
@@ -282,17 +415,7 @@
     </v-dialog>
 </v-col>
 
-  <v-col
-    sm="6"
-    md="1">
-      <v-btn
-       color="primary">
-
-      카풀 검색 
-      
-      </v-btn>
-</v-col>
-  </v-row>
+</v-row>
 </v-container>
      
 
@@ -304,15 +427,197 @@
 
 
   <v-data-table
-  
+    v-if="search_button=='false'"
+
+    
     max-width:200px
     :headers="headers"
     :items="carpool_list"
     :items-per-page="5"
     item-key="name"
-    :search="search"
 
   ></v-data-table> 
+
+
+
+
+<!-- 검색 필터 나오는 table, column 총 12개 -->
+ <v-simple-table>
+    <template 
+    v-slot:default
+    v-if="search_button=='true'">
+      <thead>
+        <tr>
+          <th class="text-left">
+            이름
+          </th>
+
+          <th class="text-left">
+            성별
+          </th>
+
+          <th class="text-left">
+            남은자리
+          </th>
+
+          <th class="text-left">
+            기간
+          </th>
+
+          <th class="text-left">
+            요일
+          </th>
+
+          <th class="text-left">
+            출발시간
+          </th>
+
+          <th class="text-left">
+            출발지
+          </th>
+
+          <th class="text-left">
+            도착지
+          </th>
+
+          <th class="text-left">
+            탑승시간
+          </th>
+
+          <th class="text-left">
+            도착시간
+          </th>
+
+          <th class="text-left">
+            추가시간
+          </th>
+
+          <th class="text-left">
+            거리차이
+          </th>
+
+          
+
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          v-for="item in carpool_list" 
+          :key="item.name"
+        >
+          <td v-if="item.start_point===search_start_point 
+          && item.destination===search_destination 
+          && item.gender===search_gender"
+          width="8%">{{ item.name }}</td>
+          <td v-if="item.start_point===search_start_point 
+          && item.destination===search_destination 
+          && search_gender==='상관없음'"
+          width="8%">{{ item.name }}</td>
+
+          <td v-if="item.start_point===search_start_point
+          && item.destination===search_destination
+          && item.gender===search_gender"
+          width="7%">{{ item.gender }}</td>
+          <td v-if="item.start_point===search_start_point
+          && item.destination===search_destination
+          && search_gender==='상관없음'"
+          width="7%">{{ item.gender }}</td>
+
+          <td v-if="item.start_point===search_start_point 
+          && item.destination===search_destination
+          && item.gender===search_gender"
+          width="9%">{{ item.seat }}</td>
+          <td v-if="item.start_point===search_start_point 
+          && item.destination===search_destination
+          && search_gender==='상관없음'"
+          width="9%">{{ item.seat }}</td>
+
+          <td v-if="item.start_point===search_start_point 
+          && item.destination===search_destination
+          && item.gender===search_gender"
+          width="7%">{{ item.period }}</td>
+          <td v-if="item.start_point===search_start_point 
+          && item.destination===search_destination
+          && search_gender==='상관없음'"
+          width="7%">{{ item.period }}</td>
+
+
+          <td v-if="item.start_point===search_start_point 
+          && item.destination===search_destination
+          && item.gender===search_gender"
+          width="8%">{{ item.day }}</td>
+          <td v-if="item.start_point===search_start_point 
+          && item.destination===search_destination
+          && search_gender==='상관없음'"
+          width="8%">{{ item.day }}</td>
+
+          <td v-if="item.start_point===search_start_point 
+          && item.destination===search_destination
+          && item.gender===search_gender"
+          width="9%">{{ item.start_time }}</td>
+          <td v-if="item.start_point===search_start_point 
+          && item.destination===search_destination
+          && search_gender==='상관없음'"
+          width="9%">{{ item.start_time }}</td>
+
+          <td v-if="item.start_point===search_start_point 
+          && item.destination===search_destination
+          && item.gender===search_gender"
+          width="8%">{{ item.start_point }}</td>
+          <td v-if="item.start_point===search_start_point 
+          && item.destination===search_destination
+          && search_gender==='상관없음'"
+          width="8%">{{ item.start_point }}</td>
+
+          <td v-if="item.start_point===search_start_point 
+          && item.destination===search_destination
+          && item.gender===search_gender"
+          width="8%">{{ item.destination }}</td>
+          <td v-if="item.start_point===search_start_point 
+          && item.destination===search_destination
+          && search_gender==='상관없음'"
+          width="8%">{{ item.destination }}</td>
+
+          
+          <td v-if="item.start_point===search_start_point 
+          && item.destination===search_destination
+          && item.gender===search_gender"
+          width="9%">{{ item.estimated_start_time }}</td>
+          <td v-if="item.start_point===search_start_point 
+          && item.destination===search_destination
+          && search_gender==='상관없음'"
+          width="9%">{{ item.estimated_start_time }}</td>
+
+          <td v-if="item.start_point===search_start_point 
+          && item.destination===search_destination
+          && item.gender===search_gender"
+          width="9%">{{ item.destination_time}}</td>
+          <td v-if="item.start_point===search_start_point 
+          && item.destination===search_destination
+          && search_gender==='상관없음'"
+          width="9%">{{ item.destination_time}}</td>
+
+          <td v-if="item.start_point===search_start_point 
+          && item.destination===search_destination
+          && item.gender===search_gender"
+          width="9%">{{ item.extra_time }}</td>
+          <td v-if="item.start_point===search_start_point 
+          && item.destination===search_destination
+          && search_gender==='상관없음'"
+          width="9%">{{ item.extra_time }}</td>
+
+          <td v-if="item.start_point===search_start_point 
+          && item.destination===search_destination
+          && item.gender===search_gender"
+          width="9%">{{ item.extra_distance }}</td>
+          <td v-if="item.start_point===search_start_point 
+          && item.destination===search_destination
+          && search_gender==='상관없음'"
+          width="9%">{{ item.extra_distance }}</td>
+        </tr>
+      </tbody>
+    </template>
+  </v-simple-table>
 </v-container>
 
 
@@ -325,8 +630,21 @@ export default {
    
     data(){
         return{
-            search: '',
-            date: [], // 기본 날짜
+
+          
+
+          // 카풀 search 할 때 필요한 데이터들
+            search_button:'false',
+            search_start_point:'',
+            search_gender:'',
+            search_periord:'',
+            search_day:'',
+            search_estimated_start_time:'',
+            search_destination_time:'',
+            
+
+
+          // 카풀 등록할 때 필요한 데이터들
             dialog: false,
 
   
@@ -347,20 +665,30 @@ export default {
 
             formHasErrors: false,
 
+            insert_error:false,
+
+
+      
+
+
+      
+      
 
 
 
-      carpool_list: [
+
+      carpool_list: [ // 테이블 기본 양식 그냥 넣음
         {
           name: '김민지',
           gender: '여자',
           seat : '1',
-          date : '3/13',
+          period : '한달',
+          day : '월요일',
           start_time : '8:00',
           start_point : '인천역',
           destination : '인하대',
           estimated_start_time : '8:30',
-          estimated_destination_time : '8:50',
+          destination_time : '8:50',
           extra_time : '5분',
           extra_distance : '0km'
         },
@@ -369,12 +697,13 @@ export default {
           name: '이하늘',
           gender: '여자',
           seat : '1',
-          date : '3/15',
+          period : '한달',
+          day : '월요일',
           start_time : '7:00',
-          start_point : '인천역',
-          destination : '인하대',
+          start_point : '소래포구',
+          destination : '서울역',
           estimated_start_time : '8:30',
-          estimated_destination_time : '8:50',
+          destination_time : '8:50',
           extra_time : '5분',
           extra_distance : '0km'
         },
@@ -384,12 +713,13 @@ export default {
           name: '인비룡',
           gender: '여자',
           seat : '1',
-          date : '3/13',
+          period : '한달',
+          day : '월요일',
           start_time : '7:50',
-          start_point : '주안역',
-          destination : '인하대',
+          start_point : '소래포구',
+          destination : '논현역',
           estimated_start_time : '8:30',
-          estimated_destination_time : '8:50',
+          destination_time : '8:50',
           extra_time : '5분',
           extra_distance : '0km'
         },
@@ -398,35 +728,33 @@ export default {
           name: '정세모',
           gender: '남자',
           seat : '1',
-          date : '3/13',
+          period : '두달',
+          day : '월요일',
           start_time : '8:00',
-          start_point : '인천역',
-          destination : '인하대',
+          start_point : '논현역',
+          destination : '소래포구',
           estimated_start_time : '8:30',
-          estimated_destination_time : '8:50',
+          destination_time : '8:50',
           extra_time : '5분',
           extra_distance : '1.1km (차 :7분, 도보: 17분)'
         },
       ],
 
       headers: [
-        {
-          text: '이름',
-          align: 'start',
-          sortable: false,
-          value: 'name',
-          width : 75
-        },
-        { text: '성별', align: 'start', sortable: false, value: 'gender',width : 75 },
-        { text: '남은 자리', align: 'start', sortable: false, value: 'seat',width : 75  },
-        { text: '날짜', align: 'start', sortable: false, value: 'date' ,width : 75 },
-        { text: '출발 시간', align: 'start', sortable: false, value: 'start_time',width : 75  },
-        { text: '출발지', align: 'start', sortable: false, value: 'start_point',width : 75  },
-        { text: '도착지', align: 'start', sortable: false, value: 'destination',width : 75  },
-        { text: '탑승시간', align: 'start', sortable: false, value: 'estimated_start_time',width : 75  },
-        { text: '도착시간', align: 'start', sortable: false, value: 'estimated_destination_time',width : 75  },
-        { text: '추가시간', align: 'start', sortable: false, value: 'extra_time' ,width : 75 },
-        { text: '거리 차이', align: 'start', sortable: false, value: 'extra_distance' ,width : 75 },
+        { text: '이름',align: 'center', sortable: false,value: 'name', width : 70},
+        { text: '성별', align: 'center', sortable: false, value: 'gender',width : 60 },
+        { text: '남은자리', align: 'center', sortable: false, value: 'seat',width : 75  },
+        { text: '기간', align: 'center', sortable: false, value: 'period' ,width : 65 },
+
+        { text: '요일', align: 'center', sortable: false, value: 'day' ,width : 70 },
+        { text: '출발시간', align: 'center', value: 'start_time',width : 90  },
+        { text: '출발지', align: 'center', sortable: false, value: 'start_point',width : 75  },
+        { text: '도착지', align: 'center', sortable: false, value: 'destination',width : 75  },
+        
+        { text: '탑승시간', align: 'center', sortable: false, value: 'estimated_start_time',width : 75  },
+        { text: '도착시간', align: 'center', sortable: false, value: 'destination_time',width : 75  },
+        { text: '추가시간', align: 'center', sortable: false, value: 'extra_time' ,width : 75 },
+        { text: '거리 차이', align: 'center', sortable: false, value: 'extra_distance' ,width : 75 },
       ],
     }
   },
@@ -438,7 +766,7 @@ export default {
     },
 
     computed: {
-      form () {
+      form () { // 카풀 등록
         return {
           input_name: this.input_name,
           input_gender: this.input_gender,
@@ -452,7 +780,20 @@ export default {
           input_car_number:this.input_car_number,
           input_car_type:this.input_car_type
         }
-      }
+      },
+
+      search_form(){ // 카풀 검색
+        return {
+          search_start_point:this.search_start_point,
+          search_destination:this.search_destination,
+          search_gender:this.search_gender,
+          search_period:this.search_period,
+          search_day:this.search_day,
+          search_estimated_start_time:this.estimated_start_time,
+          search_destination_time:this.search_destination_time
+          
+        }
+      } // 여기까지 computed , 카풀 reset 시키기 위해서 정의
     },
 
     watch: {
@@ -463,7 +804,7 @@ export default {
 
     methods: {
       
-      resetForm () {
+      resetForm () { // submit 했을 때, validation 검사 error 가 나오면 다시 정보 입력할 수 있는 refresh 진행.
         this.errorMessages = []
         this.formHasErrors = false
 
@@ -471,37 +812,89 @@ export default {
           this.$refs[f].reset()
         })
       },
+
       submit () {
         this.formHasErrors = false
+        this.insert_error = true
 
-        Object.keys(this.form).forEach(f => {
+        Object.keys(this.form).forEach(f => { // 유효성 검사. vuetify 에서 양식 가져옴
           if (!this.form[f]) this.formHasErrors = true
 
           this.$refs[f].validate(true)
         })
 
-       if(this.formHasErrors==false){
+       if(this.formHasErrors==false){ // 만약, input 값이 다 입력되어 있다면 
           this.dialog=false
+          this.insert_error = false
         }
 
       },
 
       insertNew() { // 카풀 등록 함수
 
-    
+      if(this.insert_error==false){ // input 값이 다 입력되어 있어서 insert_error 가 false 이면, push 진행
+
+      
     
         this.carpool_list.push({
         "name":this.input_name,
         "gender":this.input_gender, 
         "seat":this.input_seat,
-        "date":this.input_period, 
+        "period":this.input_period,
+        "day":this.input_day,  
         "start_time":this.input_start_time,
         "start_point":this.input_start_point,
         "destination":this.input_destination, 
         "estimated_start_time":"", 
-        "estimated_destination_time":this.input_destination_time, 
+        "destination_time":this.input_destination_time, 
         "extra_time":"", 
         "extra_distance":"" })
+
+
+        
+
+        this.resetForm() // 값 push 후 자동으로 등록창 값 지운다.
+
+      }
+       },
+
+       search_info() { // 카풀 검색 함수
+        this.formHasErrors = false
+        this.search_button='true'
+
+
+        
+
+         Object.keys(this.search_form).forEach(f => { // 유효성 검사. vuetify 에서 양식 가져옴
+          if (!this.search_form[f]) this.formHasErrors = true
+
+          this.$refs[f].validate(true)
+        })
+        
+
+        
+          	
+
+         
+
+         
+
+         
+         
+         
+       },
+
+       delete_info() { // 카풀 초기화 함수. 내용도 다 reset 시킴
+         this.search_button='false'
+
+        this.errorMessages = []
+        this.formHasErrors = false
+
+        Object.keys(this.search_form).forEach(f => {
+          this.$refs[f].reset()
+        })
+         
+         
        },
     }
   }
