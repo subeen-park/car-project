@@ -19,11 +19,11 @@
         v-model="search_start_point"
         append-icon="mdi-magnify"
         label="출발지*"
+
+        :rules="[() => !!search_start_point || '출발지를 입력하세요']"
+        :error-messages="errorMessages"
         
         required
-        placeholder="입력하세요"
-        single-line
-        hide-details
       ></v-text-field>
     </v-col>
 
@@ -35,9 +35,9 @@
         v-model="search_destination"
         append-icon="mdi-magnify"
         label="목적지*"
+
+        :rules="[() => !!search_destination || '목적지를 입력하세요']"
         
-        single-line
-        hide-details
       ></v-text-field>
     </v-col>
 
@@ -48,6 +48,9 @@
             ref="search_gender"
             :items="['여자', '남자', '상관없음']"
             v-model="search_gender"
+
+            :rules="[() => !!search_gender || '성별을 선택 하세요']"
+
             label="성별*"
             required
           ></v-select>
@@ -106,9 +109,8 @@
     </v-col>
 </v-row>
 
-<v-row
-  justify="center"
-  align="center">
+<v-row>
+  <v-spacer></v-spacer>
   
   <v-col
   cols="12"
@@ -123,6 +125,7 @@
       
       </v-btn>
   </v-col>
+  <v-spacer></v-spacer>
   <v-col
     cols="12"
     sm="4">
@@ -641,6 +644,8 @@ export default {
             search_day:'',
             search_estimated_start_time:'',
             search_destination_time:'',
+
+            search_formHasErrors: false,
             
 
 
@@ -751,10 +756,10 @@ export default {
         { text: '출발지', align: 'center', sortable: false, value: 'start_point',width : 75  },
         { text: '도착지', align: 'center', sortable: false, value: 'destination',width : 75  },
         
-        { text: '탑승시간', align: 'center', sortable: false, value: 'estimated_start_time',width : 75  },
-        { text: '도착시간', align: 'center', sortable: false, value: 'destination_time',width : 75  },
-        { text: '추가시간', align: 'center', sortable: false, value: 'extra_time' ,width : 75 },
-        { text: '거리 차이', align: 'center', sortable: false, value: 'extra_distance' ,width : 75 },
+        { text: '탑승시간', align: 'center',  value: 'estimated_start_time',width : 75  },
+        { text: '도착시간', align: 'center',  value: 'destination_time',width : 75  },
+        { text: '추가시간', align: 'center',  value: 'extra_time' ,width : 75 },
+        { text: '거리 차이', align: 'center',  value: 'extra_distance' ,width : 75 },
       ],
     }
   },
@@ -860,16 +865,25 @@ export default {
 
        search_info() { // 카풀 검색 함수
         this.formHasErrors = false
-        this.search_button='true'
+
+        this.search_button ='true'
+        
+        
 
 
         
 
          Object.keys(this.search_form).forEach(f => { // 유효성 검사. vuetify 에서 양식 가져옴
-          if (!this.search_form[f]) this.formHasErrors = true
+          if (!this.search_form[f]) this.search_formHasErrors = true
 
           this.$refs[f].validate(true)
         })
+
+        if(this.search_formHasErrors == false){
+          this.search_button ='true'
+        }
+
+
         
 
         
@@ -888,7 +902,7 @@ export default {
          this.search_button='false'
 
         this.errorMessages = []
-        this.formHasErrors = false
+        this.search_formHasErrors = false
 
         Object.keys(this.search_form).forEach(f => {
           this.$refs[f].reset()
